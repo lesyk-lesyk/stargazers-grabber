@@ -1,0 +1,25 @@
+{
+  "name": "stargazers-grabber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okachynskyy/stargazers-grabber.git"
+  },
+  "author": "Oleksiy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/okachynskyy/stargazers-grabber/issues"
+  },
+  "homepage": "https://github.com/okachynskyy/stargazers-grabber#readme",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "request": "^2.85.0",
+    "request-all-pages": "^0.3.1",
+    "request-promise-native": "^1.0.5"
+  }
+}
