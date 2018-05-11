@@ -18,6 +18,8 @@
   "homepage": "https://github.com/okachynskyy/stargazers-grabber#readme",
   "dependencies": {
     "bluebird": "^3.5.1",
+    "csv-write-stream": "^2.0.0",
+    "dotenv": "^5.0.1",
     "request": "^2.85.0",
     "request-all-pages": "^0.3.1",
     "request-promise-native": "^1.0.5"

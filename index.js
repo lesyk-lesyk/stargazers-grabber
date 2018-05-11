@@ -1,8 +1,12 @@
 const requestAllPages = require('request-all-pages');
 const Promise = require('bluebird');
 const rpn = require('request-promise-native');
+const csvWriter = require('csv-write-stream');
+const fs = require('fs');
 
 const getAllStargazers = async (uri, clientId, clientSecret) => new Promise((resolve, reject) => {
+  console.log(`Getting all stargazers for ${uri}`);
+
   const requestOpts = {
     uri: `${uri}/stargazers?client_id=${clientId}&client_secret=${clientSecret}`,
     json: true,
@@ -24,6 +28,8 @@ const getAllStargazers = async (uri, clientId, clientSecret) => new Promise((res
 });
 
 const getPublicInfo = async (stargazerUrls, clientId, clientSecret, concurrentRequests) => {
+  console.log(`Getting all public info for ${stargazerUrls.length} stargazers`);
+
   const userProfiles = await Promise.map(stargazerUrls, stargazerUrl => (
     rpn({
       uri: stargazerUrl,
@@ -44,10 +50,20 @@ const getPublicInfo = async (stargazerUrls, clientId, clientSecret, concurrentRe
     .map(userProfile => ({
       login: userProfile.login,
       name: userProfile.name,
-      publicEmail: userProfile.email,
       company: userProfile.company,
-      profileUrl: userProfile.url
+      publicEmail: userProfile.email
     }));
+};
+
+const writeCsv = async (headers, data, output) => {
+  console.log('Writing to csv...');
+
+  const writer = csvWriter({ headers })
+  writer.pipe(fs.createWriteStream(output))
+  data.forEach(row => {
+    writer.write(row)
+  });
+  writer.end()
 };
 
 const grab = async (options) => {
@@ -56,9 +72,39 @@ const grab = async (options) => {
   const stargazerUrls = await getAllStargazers(uri, clientId, clientSecret);
   const publicInfo = await getPublicInfo(stargazerUrls, clientId, clientSecret, concurrentRequests);
 
-  console.log(publicInfo);
-};
+  const headers = [
+    'Login',
+    'Name',
+    'Company',
+    'Public email',
+    'Event emails'
+  ];
 
+  let rows;
+  if (onlyPublicEmails) {
+    rows = publicInfo
+      .filter(info => info.publicEmail != null)
+      .map(info => ([
+        info.login,
+        info.name,
+        info.company,
+        info.publicEmail,
+        ''
+      ]));
+  } else {
+    // add logic for getting emails from user events 
+  }
+
+  await writeCsv(
+    headers,
+    rows,
+    output
+  );
+
+  console.log('Writing done!');
+  console.log(`All stargazers: ${publicInfo.length}`);
+  console.log(`With public email: ${rows.length}`);
+};
 
 module.exports = {
   grab
