@@ -44,8 +44,6 @@ const getPublicInfo = async (stargazerUrls, clientId, clientSecret, concurrentRe
     })
   ), { concurrency: concurrentRequests || 30 });
 
-  // console.log('Stargazers count: %d', userProfiles.length);
-
   return userProfiles
     .map(userProfile => ({
       login: userProfile.login,
@@ -92,7 +90,7 @@ const grab = async (options) => {
         ''
       ]));
   } else {
-    // add logic for getting emails from user events 
+    // TODO: add logic for getting emails from user events 
   }
 
   await writeCsv(
