@@ -1,14 +1,17 @@
 require('dotenv').config();
 const stargazersGrabber = require('./index');
 
+const owner = 'Rebilly';
+const repoName = `RebillyAPI`;
+
 try {
   stargazersGrabber.grab({
-    uri: 'https://api.github.com/repos/Rebilly/generator-openapi-repo',
+    owner,
+    repoName,
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     concurrentRequests: 30,
-    onlyPublicEmails: true,
-    output: 'results.csv'
+    onlyPublicEmails: true
   });
 
 } catch (error) {

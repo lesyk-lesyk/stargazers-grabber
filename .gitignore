@@ -58,4 +58,4 @@ typings/
 .env
 
 # app output
-results.csv
+*.csv

@@ -4,11 +4,11 @@ const rpn = require('request-promise-native');
 const csvWriter = require('csv-write-stream');
 const fs = require('fs');
 
-const getAllStargazers = async (uri, clientId, clientSecret) => new Promise((resolve, reject) => {
-  console.log(`Getting all stargazers for ${uri}`);
+const getAllStargazers = async (owner, repoName, clientId, clientSecret) => new Promise((resolve, reject) => {
+  console.log(`Getting all stargazers for ${repoName}`);
 
   const requestOpts = {
-    uri: `${uri}/stargazers?client_id=${clientId}&client_secret=${clientSecret}`,
+    uri: `https://api.github.com/repos/${owner}/${repoName}/stargazers?client_id=${clientId}&client_secret=${clientSecret}`,
     json: true,
     body: {},
     headers: { 'user-agent': 'request-all-pages' }
@@ -65,9 +65,9 @@ const writeCsv = async (headers, data, output) => {
 };
 
 const grab = async (options) => {
-  const { uri, clientId, clientSecret, output, concurrentRequests, onlyPublicEmails } = options;
+  const { owner, repoName, clientId, clientSecret, concurrentRequests, onlyPublicEmails } = options;
 
-  const stargazerUrls = await getAllStargazers(uri, clientId, clientSecret);
+  const stargazerUrls = await getAllStargazers(owner, repoName, clientId, clientSecret);
   const publicInfo = await getPublicInfo(stargazerUrls, clientId, clientSecret, concurrentRequests);
 
   const headers = [
@@ -93,10 +93,12 @@ const grab = async (options) => {
     // TODO: add logic for getting emails from user events 
   }
 
+  const fileName = `${owner}.${repoName}.csv`;
+
   await writeCsv(
     headers,
     rows,
-    output
+    fileName
   );
 
   console.log('Writing done!');
