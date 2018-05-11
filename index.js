@@ -2,10 +2,7 @@ const requestAllPages = require('request-all-pages');
 const Promise = require('bluebird');
 const rpn = require('request-promise-native');
 
-const clientId = '1307f97d56d4fa4740de';
-const clientSecret = 'bf0ac69032caf8355850cb7c4c19d2137f44f2a2';
-
-const getAllStargazers = (uri) => new Promise((resolve, reject) => {
+const getAllStargazers = async (uri, clientId, clientSecret) => new Promise((resolve, reject) => {
   const requestOpts = {
     uri: `${uri}/stargazers?client_id=${clientId}&client_secret=${clientSecret}`,
     json: true,
@@ -26,32 +23,43 @@ const getAllStargazers = (uri) => new Promise((resolve, reject) => {
   });
 });
 
-const uri = `https://api.github.com/repos/Rebilly/generator-openapi-repo`;
+const getPublicInfo = async (stargazerUrls, clientId, clientSecret, concurrentRequests) => {
+  const userProfiles = await Promise.map(stargazerUrls, stargazerUrl => (
+    rpn({
+      uri: stargazerUrl,
+      qs: {
+        client_id: clientId,
+        client_secret: clientSecret
+      },
+      headers: {
+        'User-Agent': 'Request-Promise'
+      },
+      json: true
+    })
+  ), { concurrency: concurrentRequests || 30 });
 
-getAllStargazers(uri)
-  .then(userUrls => {
-    const concurentItems = 10;
-    return Promise.map(userUrls, userUrl => (
-      rpn({
-        uri: userUrl,
-        qs: {
-          client_id: clientId,
-          client_secret: clientSecret
-        },
-        headers: {
-          'User-Agent': 'Request-Promise'
-        },
-        json: true
-      })
-    ), { concurrency: concurentItems })
-  })
-  .then(userProfiles => {
-    console.log('Stargazers count: %d', userProfiles.length);
-    const emails = userProfiles
-      .map(userProfile => userProfile.email)
-      .filter(email => email != null);
+  // console.log('Stargazers count: %d', userProfiles.length);
 
-    console.log('Public email count: %d', emails.length);
-    console.log(emails);
-  })
-  .catch(err => console.log(err));
+  return userProfiles
+    .map(userProfile => ({
+      login: userProfile.login,
+      name: userProfile.name,
+      publicEmail: userProfile.email,
+      company: userProfile.company,
+      profileUrl: userProfile.url
+    }));
+};
+
+const grab = async (options) => {
+  const { uri, clientId, clientSecret, output, concurrentRequests, onlyPublicEmails } = options;
+
+  const stargazerUrls = await getAllStargazers(uri, clientId, clientSecret);
+  const publicInfo = await getPublicInfo(stargazerUrls, clientId, clientSecret, concurrentRequests);
+
+  console.log(publicInfo);
+};
+
+
+module.exports = {
+  grab
+}
